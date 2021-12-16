@@ -1,5 +1,5 @@
 {
-"name": "shutter cover panel card",
+"name": "shutter cover panel card with script for tilt",
 "content_in_root": true,
 "filename": "shutter-cover-panel-card.js",
 "render_readme" : true
