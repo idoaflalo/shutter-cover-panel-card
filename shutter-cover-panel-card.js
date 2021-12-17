@@ -30,50 +30,77 @@ class ShutterCoverPanelcard extends LitElement {
     return html`
       <div class="page" style="background:${background};">
         <div class="main">
-          <div class="inner-main" style="width:${this.config.entities.length * 150}px;">
-            ${this.config.entities.map((ent) => {
-              entityCounter++;
-              const stateObj = this.hass.states[ent.entity];
-              return stateObj
-                ? html`
-                    <div class="cover" style="--coverdistance: ${coverdistance};">
-                      <div class="cover-slider">
-                        <h2>${ent.name || stateObj.attributes.friendly_name}</h2>
-                        ${ent.script
-                          ? html`
-                              <div
-                                class="range-holder"
-                                style="--slider-height: ${coverHeight}; --covercolor: ${covercolor}; --coverbackground: ${coverbackground}; --borderradius: ${borderradius}; --coverbackground: ${coverbackground};"
-                              >
-                                <input
-                                  type="range"
-                                  class="${stateObj.state}"
-                                  style="--slider-width: ${coverWidth};--slider-height: ${coverHeight};"
-                                  .value="${stateObj.state === "close" ? 0 : Math.round((stateObj.attributes.current_position - 100) * -1)}"
-                                  @change=${(e) => this._setCoverPosition(ent.script, (e.target.value - 100) * -1)}
-                                />
-                              </div>
-                            `
-                          : html``}
+          <div class="scroll-box">
+            <div class="inner-main" style="width:${this.config.entities.length * 150}px;">
+              ${this.config.entities.map((ent) => {
+                entityCounter++;
+                const stateObj = this.hass.states[ent.entity];
+                return stateObj
+                  ? html`
+                      <div class="cover" style="--coverdistance: ${coverdistance};">
+                        <div class="cover-slider">
+                          <h2>${ent.name || stateObj.attributes.friendly_name}</h2>
+                          ${ent.script
+                            ? html`
+                                <div
+                                  class="range-holder"
+                                  style="--slider-height: ${coverHeight}; --covercolor: ${covercolor}; --coverbackground: ${coverbackground}; --borderradius: ${borderradius}; --coverbackground: ${coverbackground};"
+                                >
+                                  <input
+                                    type="range"
+                                    class="${stateObj.state}"
+                                    style="--slider-width: ${coverWidth};--slider-height: ${coverHeight};"
+                                    .value="${stateObj.state === "close"
+                                      ? 0
+                                      : Math.round((stateObj.attributes.current_position - 100) * -1)}"
+                                    @change=${(e) => this._setCoverPosition(ent.script, (e.target.value - 100) * -1)}
+                                    @touchmove=${(e) => {}}
+                                  />
+                                </div>
+                              `
+                            : html``}
+                        </div>
+                        <div class="push"></div>
+                        <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
+                          <input type="checkbox" id="up${entityCounter}" class="push-btn" @click=${(e) => this._up(stateObj)} />
+                          <label for="up${entityCounter}">↑</label>
+                        </div>
+                        <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
+                          <input type="checkbox" id="stop${entityCounter}" class="push-btn" @click=${(e) => this._stop(stateObj)} />
+                          <label for="stop${entityCounter}">◼︎</label>
+                        </div>
+                        <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
+                          <input type="checkbox" id="down${entityCounter}" class="push-btn" @click=${(e) => this._down(stateObj)} />
+                          <label for="down${entityCounter}">↓</label>
+                        </div>
                       </div>
-                      <div class="push"></div>
-                      <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
-                        <input type="checkbox" id="up${entityCounter}" class="push-btn" @click=${(e) => this._up(stateObj)} />
-                        <label for="up${entityCounter}">↑</label>
-                      </div>
-                      <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
-                        <input type="checkbox" id="stop${entityCounter}" class="push-btn" @click=${(e) => this._stop(stateObj)} />
-                        <label for="stop${entityCounter}">◼︎</label>
-                      </div>
-                      <div class="push" style="--coverbackground: ${coverbackground}; --buttonborderradius: ${buttonborderradius};">
-                        <input type="checkbox" id="down${entityCounter}" class="push-btn" @click=${(e) => this._down(stateObj)} />
-                        <label for="down${entityCounter}">↓</label>
-                      </div>
-                    </div>
-                  `
-                : html``;
-            })}
+                    `
+                  : html``;
+              })}
+            </div>
           </div>
+          ${["left", "right"].map(
+            (value) => html`
+              <span
+                class="${value}-arrow"
+                @click=${(e) => {
+                  const element = this.shadowRoot.querySelector(".scroll-box");
+                  element.scroll({
+                    behavior: "smooth",
+                    left: element.scrollLeft + 200 * (value === "right" ? 1 : -1),
+                  });
+                }}
+              >
+                <svg x="0px" y="0px" viewBox="0 0 330 330">
+                  <path
+                    d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393
+             c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393
+             s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"
+                  />
+                </svg>
+              </span>
+            `,
+          )}
         </div>
         <div class="side" style="background:${sidebackground};">
           <div class="header"></div>
@@ -216,7 +243,6 @@ class ShutterCoverPanelcard extends LitElement {
         border-radius: 20px;
         display: flex;
         flex-direction: row;
-        // justify-self: stretch;
         box-shadow: inset -6px -6px 6px 0 rgba(255, 255, 255, 0.5), inset 6px 6px 6px 0 rgba(0, 0, 0, 0.1);
       }
 
@@ -342,7 +368,9 @@ class ShutterCoverPanelcard extends LitElement {
         display: flex;
         flex-direction: row;
         direction: rtl;
+        overflow: hidden;
       }
+
       .page > .side {
         padding: 15px;
         width: 300px;
@@ -350,8 +378,6 @@ class ShutterCoverPanelcard extends LitElement {
         flex-direction: column;
         background: transparent;
         align-items: flex-end;
-        //          background: linear-gradient(235deg, rgba(28,122,226,1) 0%, rgba(66,230,222,1) 90%);
-        //          justify-content:space-between
       }
       .side .header {
       }
@@ -385,29 +411,55 @@ class ShutterCoverPanelcard extends LitElement {
         margin-bottom: 20px;
       }
 
-      .side .bottom {
-      }
-
       .bottom_space {
         margin-top: 20px;
       }
 
       .page > .main {
         width: 86%;
-        // margin-top: 150px;
-        // overflow: hidden;
-        // overflow-x:scroll;
+        position: relative;
       }
-      .page > .main > .inner-main {
+
+      .page > .main > .scroll-box {
+        width: 100%;
+        height: 100%;
+      }
+
+      .page > .main > .scroll-box > .inner-main {
         display: flex;
         flex-direction: row;
         align-items: center;
         height: 100%;
         margin: auto;
       }
-      .page > .main > .inner-main > .cover {
+
+      .page > .main > .scroll-box > .inner-main > .cover {
         width: var(--coverdistance);
         display: inline-block;
+      }
+
+      .page > .main > .left-arrow,
+      .page > .main > .right-arrow {
+        display: none;
+        top: 45%;
+        position: absolute;
+        opacity: 0.7;
+      }
+
+      .page > .main > .left-arrow > svg,
+      .page > .main > .right-arrow > svg {
+        width: 26px;
+        padding: 10px;
+      }
+
+      .page > .main > .right-arrow {
+        right: 0;
+        transform: rotate(-90deg);
+      }
+
+      .page > .main > .left-arrow {
+        left: 0;
+        transform: rotate(90deg);
       }
 
       .cover .icon {
@@ -493,7 +545,6 @@ class ShutterCoverPanelcard extends LitElement {
         cursor: ns-resize;
         background: var(--covercolor);
         box-shadow: -350px 0 0 350px var(--covercolor), inset 0 0 0 80px #e3edf7;
-        // border-radius: 25px;
         transition: box-shadow 0.2s ease-in-out;
         position: relative;
         top: calc((var(--slider-width) - 80px) / 2);
@@ -516,7 +567,6 @@ class ShutterCoverPanelcard extends LitElement {
       .push > input.push-btn + label {
         border: 0px solid rgba(57, 128, 228, 0.4);
         background: var(--coverbackground);
-
         width: 70px;
         height: 50px;
         text-align: center;
@@ -533,6 +583,38 @@ class ShutterCoverPanelcard extends LitElement {
         background: var(--state-icon-active-color);
         color: #fff;
         border-color: #1c7ae2;
+      }
+
+      @media only screen and (max-width: 870px) {
+        .page {
+          flex-direction: column-reverse;
+        }
+
+        .page > .side {
+          width: 100%;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+
+        .page > .main {
+          width: 100%;
+          margin-bottom: 20px;
+        }
+
+        .page > .main > .scroll-box > .inner-main {
+          padding-right: 20px;
+          padding-left: 20px;
+        }
+
+        .page > .main > .scroll-box {
+          overflow-y: scroll;
+          padding-bottom: 20px;
+        }
+
+        .page > .main > .left-arrow,
+        .page > .main > .right-arrow {
+          display: block;
+        }
       }
     `;
   }
