@@ -450,6 +450,7 @@ class ShutterCoverPanelcard extends LitElement {
       .page > .main > .right-arrow > svg {
         width: 26px;
         padding: 10px;
+        fill: var(--primary-color);
       }
 
       .page > .main > .right-arrow {
